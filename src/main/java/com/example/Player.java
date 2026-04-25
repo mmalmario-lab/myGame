@@ -13,6 +13,10 @@ public class Player {
 
     // Direction flags
     public boolean up, down, left, right;
+    
+    // Carrying
+    public Order carrying = null;
+    public boolean hasItem = false;
 
     public Player() {
         // Spawn player at center of screen first
@@ -22,14 +26,36 @@ public class Player {
 
     // Update position based on direction
     public void update() {
+        // Calculate new position first
+        int newX = worldX;
+        int newY = worldY;
+        
         if (up)
-            worldY -= speed;
+            newY -= speed;
         if (down)
-            worldY += speed;
+            newY += speed;
         if (left)
-            worldX -= speed;
+            newX -= speed;
         if (right)
-            worldX += speed;
+            newX += speed;
+        
+        // Only move if no collision!
+        if(canMove(newX, worldY)) worldX = newX;
+        if(canMove(worldX, newY)) worldY = newY;
+    }
+    
+    public boolean canMove(int x, int y) {
+        // Convert pixel position to tile coordinates
+        int tileCol = x / GamePanel.TILE_SIZE;
+        int tileRow = y / GamePanel.TILE_SIZE;
+        
+        // Check all 4 corners of player
+        if(GamePanel.tileM.isCollision(tileCol, tileRow)) return false;
+        if(GamePanel.tileM.isCollision(tileCol + (size/GamePanel.TILE_SIZE), tileRow)) return false;
+        if(GamePanel.tileM.isCollision(tileCol, tileRow + (size/GamePanel.TILE_SIZE))) return false;
+        if(GamePanel.tileM.isCollision(tileCol + (size/GamePanel.TILE_SIZE), tileRow + (size/GamePanel.TILE_SIZE))) return false;
+        
+        return true;
     }
 
     // Draw player (for now we use a placeholder, later replace with your pixel
@@ -42,5 +68,11 @@ public class Player {
         g2.setColor(Color.BLACK);
         g2.setStroke(new BasicStroke(2));
         g2.drawRect(worldX, worldY, size, size);
+        
+        // Draw item being carried
+        if(hasItem && carrying != null) {
+            g2.setColor(Color.ORANGE);
+            g2.fillOval(worldX + 10, worldY - 10, 12, 12);
+        }
     }
 }

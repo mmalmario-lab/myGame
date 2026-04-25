@@ -6,6 +6,7 @@ import java.awt.event.KeyListener;
 public class KeyHandler implements KeyListener {
 
     public boolean up, down, left, right;
+    public boolean interact;
 
     @Override
     public void keyPressed(KeyEvent e) {
@@ -21,6 +22,8 @@ public class KeyHandler implements KeyListener {
                 left = true;
             if (code == KeyEvent.VK_D)
                 right = true;
+            if (code == KeyEvent.VK_E)
+                interact = true; // INTERACT KEY
         }
 
         // === CONTROLS FOR MAIN MENU ===
@@ -61,13 +64,48 @@ public class KeyHandler implements KeyListener {
             if (code == KeyEvent.VK_ESCAPE)
                 GamePanel.currentState = GamePanel.STATE_MENU;
         }
+        
+        // === SHOP CONTROLS ===
+        if(GamePanel.currentState == GamePanel.STATE_SHOP) {
+            if(code == KeyEvent.VK_W) GamePanel.shop.selectedOption--;
+            if(code == KeyEvent.VK_S) GamePanel.shop.selectedOption++;
+            if(GamePanel.shop.selectedOption < 0) GamePanel.shop.selectedOption = 0;
+            if(GamePanel.shop.selectedOption >= 4) GamePanel.shop.selectedOption = 3;
+            
+            if(code == KeyEvent.VK_ENTER) GamePanel.shop.buy();
+            if(code == KeyEvent.VK_ESCAPE) GamePanel.currentState = GamePanel.STATE_ROUND_END;
+        }
+        
+        // === ROLE SELECTION ===
+        if(GamePanel.currentState == GamePanel.STATE_ROLE_SELECT) {
+            if(code == KeyEvent.VK_W) GamePanel.roleSelect.selected--;
+            if(code == KeyEvent.VK_S) GamePanel.roleSelect.selected++;
+            if(GamePanel.roleSelect.selected < 0) GamePanel.roleSelect.selected = 0;
+            if(GamePanel.roleSelect.selected >= 5) GamePanel.roleSelect.selected = 4;
+            
+            if(code == KeyEvent.VK_ENTER) {
+                GamePanel.currentRole = GamePanel.roleSelect.selected;
+                GamePanel.gp.startRound();
+            }
+        }
+        
+        // === ROUND END CONTROLS ===
+        if(GamePanel.currentState == GamePanel.STATE_ROUND_END) {
+            if(code == KeyEvent.VK_1) GamePanel.currentState = GamePanel.STATE_SHOP;
+            if(code == KeyEvent.VK_3) GamePanel.currentState = GamePanel.STATE_ROLE_SELECT;
+            if(code == KeyEvent.VK_ENTER) {
+                GamePanel.roundNumber++;
+                GamePanel.targetScore += 30;
+                GamePanel.gp.startRound();
+            }
+        }
     }
 
     // === MENU SELECTION FUNCTION ===
     private void selectMenuOption() {
         switch (GamePanel.menuOption) {
             case 0: // START
-                GamePanel.currentState = GamePanel.STATE_GAME;
+                GamePanel.currentState = GamePanel.STATE_ROLE_SELECT;
                 break;
             case 1: // SETTINGS
                 GamePanel.currentState = GamePanel.STATE_SETTINGS;
@@ -87,6 +125,8 @@ public class KeyHandler implements KeyListener {
             down = false;
         if (code == KeyEvent.VK_A)
             left = false;
+        if (code == KeyEvent.VK_E)
+            interact = false;
         if (code == KeyEvent.VK_D)
             right = false;
     }
